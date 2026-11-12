@@ -1,30 +1,38 @@
-/usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager tools
-Loading package information...                                                  
-Loading local repository...                                                     
-[                                       ] 3% Loading local repository...        
-[                                       ] 3% Fetch remote repository...         
-[=                                      ] 3% Fetch remote repository...         
-[=                                      ] 4% Fetch remote repository...         
-[=                                      ] 5% Fetch remote repository...         
-[==                                     ] 5% Fetch remote repository...         
-[==                                     ] 6% Fetch remote repository...         
-[==                                     ] 7% Fetch remote repository...         
-[==                                     ] 7% Computing updates...               
-[===                                    ] 8% Computing updates...               
-[===                                    ] 10% Computing updates...              
-                                                                                
-[===                                    ] 10% Computing updates...              
-Warning: Failed to find package 'tools'
-/home/runner/work/_actions/android-actions/setup-android/v3/dist/index.js:1823
-                error = new Error(`The process '${this.toolPath}' failed with exit code ${this.processExitCode}`);
-                        ^
 
-Error: The process '/usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager' failed with exit code 1
-    at ExecState._setResult (/home/runner/work/_actions/android-actions/setup-android/v3/dist/index.js:1823:25)
-    at ExecState.CheckComplete (/home/runner/work/_actions/android-actions/setup-android/v3/dist/index.js:1806:18)
-    at ChildProcess.<anonymous> (/home/runner/work/_actions/android-actions/setup-android/v3/dist/index.js:1700:27)
-    at ChildProcess.emit (node:events:514:28)
-    at maybeClose (node:internal/child_process:1172:16)
-    at ChildProcess._handle.onexit (node:internal/child_process:335:5)
+name: Build Android APK
 
-Node.js v24.22.1
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-dia-de-agua-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
